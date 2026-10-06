@@ -23,6 +23,7 @@ backend/uploads/*
 dist/
 dist-ssr/
 frontend/dist/
+deploy/
 
 # Logs
 logs/

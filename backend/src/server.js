@@ -1,7 +1,13 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-require('dotenv').config();
+const fs = require('fs');
+
+// Load environment variables reliably from backend/.env or root .env
+const envPath = fs.existsSync(path.join(__dirname, '..', '.env')) 
+  ? path.join(__dirname, '..', '.env') 
+  : path.join(__dirname, '..', '..', '.env');
+require('dotenv').config({ path: envPath });
 
 // Initialize DB schema
 require('./config/db');
@@ -26,6 +32,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve static uploads
 const uploadsDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 app.use('/uploads', express.static(uploadsDir));
 
 // API Routes
@@ -35,14 +44,34 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/settings', settingsRoutes);
 
-// Health check
+// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
     timestamp: new Date().toISOString(),
-    service: 'ApexTask Management API'
+    service: 'ApexTask Unified Full-Stack Application'
   });
 });
+
+// Serve Frontend Static Files (Unified Single Codebase Architecture)
+// Checks backend/public first, then falls back to ../frontend/dist
+const publicDir = path.join(__dirname, '..', 'public');
+const frontendDistDir = path.join(__dirname, '..', '..', 'frontend', 'dist');
+
+const staticDir = fs.existsSync(publicDir) ? publicDir : (fs.existsSync(frontendDistDir) ? frontendDistDir : null);
+
+if (staticDir) {
+  console.log(`📦 Serving React frontend static assets from: ${staticDir}`);
+  app.use(express.static(staticDir));
+
+  // SPA fallback middleware: handles any client-side routes (Express 4 & 5 compatible)
+  app.use((req, res, next) => {
+    if ((req.method === 'GET' || req.method === 'HEAD') && !req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+      return res.sendFile(path.join(staticDir, 'index.html'));
+    }
+    next();
+  });
+}
 
 // Centralized error handler
 app.use((err, req, res, next) => {
@@ -61,5 +90,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 ApexTask Backend server running on http://localhost:${PORT}`);
+  console.log(`🚀 ApexTask Unified Server running on http://localhost:${PORT}`);
 });
