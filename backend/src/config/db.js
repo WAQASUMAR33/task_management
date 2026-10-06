@@ -10,6 +10,7 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 15,
   queueLimit: 0,
+  connectTimeout: 15000,
   timezone: '+00:00',
   dateStrings: true
 });
@@ -39,18 +40,29 @@ async function run(sql, params = []) {
 
 async function initDatabase() {
   try {
-    // Ensure database exists
-    const rootConn = await mysql.createConnection({
-      host: process.env.DB_HOST || '127.0.0.1',
-      port: parseInt(process.env.DB_PORT || '3306', 10),
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || ''
-    });
+    const isLocal = process.env.DB_HOST === '127.0.0.1' || process.env.DB_HOST === 'localhost';
 
-    await rootConn.query(`CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME || 'task_management'}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
-    await rootConn.end();
+    // On local machines, optionally attempt to create the database if permissions allow
+    if (isLocal) {
+      try {
+        const rootConn = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          port: parseInt(process.env.DB_PORT || '3306', 10),
+          user: process.env.DB_USER || 'root',
+          password: process.env.DB_PASSWORD || ''
+        });
+        await rootConn.query(`CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME || 'task_management'}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+        await rootConn.end();
+      } catch (ignored) {
+        // User may already be restricted to existing DB
+      }
+    }
 
-    // Create Tables
+    // Verify pool connection
+    const testConn = await pool.getConnection();
+    testConn.release();
+
+    // Create Tables if not exist
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -72,18 +84,17 @@ async function initDatabase() {
         title VARCHAR(255) NOT NULL,
         description TEXT,
         assigned_to INT NULL,
-        created_by INT NULL,
         due_date DATE NULL,
-        priority ENUM('low', 'medium', 'high') NOT NULL DEFAULT 'medium',
-        status ENUM('todo', 'in_progress', 'completed') NOT NULL DEFAULT 'todo',
+        priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
+        status ENUM('todo', 'in_progress', 'completed') DEFAULT 'todo',
+        created_by INT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_assigned (assigned_to),
         INDEX idx_status (status),
         INDEX idx_priority (priority),
-        INDEX idx_due_date (due_date),
         FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL,
-        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
@@ -91,15 +102,15 @@ async function initDatabase() {
       CREATE TABLE IF NOT EXISTS task_attachments (
         id INT AUTO_INCREMENT PRIMARY KEY,
         task_id INT NOT NULL,
-        uploaded_by INT NOT NULL,
+        uploaded_by INT NULL,
         filename VARCHAR(255) NOT NULL,
         original_name VARCHAR(255) NOT NULL,
         mime_type VARCHAR(128) NOT NULL,
-        size BIGINT NOT NULL,
+        size INT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_task (task_id),
+        INDEX idx_attachment_task (task_id),
         FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
-        FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE
+        FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE SET NULL
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
@@ -107,12 +118,12 @@ async function initDatabase() {
       CREATE TABLE IF NOT EXISTS task_comments (
         id INT AUTO_INCREMENT PRIMARY KEY,
         task_id INT NOT NULL,
-        user_id INT NOT NULL,
+        user_id INT NULL,
         comment TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_task_comment (task_id),
+        INDEX idx_comment_task (task_id),
         FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
@@ -120,8 +131,8 @@ async function initDatabase() {
       CREATE TABLE IF NOT EXISTS activity_logs (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NULL,
-        action VARCHAR(128) NOT NULL,
-        details TEXT,
+        action VARCHAR(64) NOT NULL,
+        details TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_log_user (user_id),
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
@@ -135,9 +146,9 @@ async function initDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
-    console.log('✅ Connected to WAMP MySQL Server (Database: ' + (process.env.DB_NAME || 'task_management') + ')');
+    console.log(`✅ Connected to MySQL Server at ${process.env.DB_HOST}:${process.env.DB_PORT} (Database: ${process.env.DB_NAME})`);
   } catch (err) {
-    console.error('❌ Failed to connect to WAMP MySQL:', err.message);
+    console.error(`❌ Failed to connect to MySQL at ${process.env.DB_HOST}:${process.env.DB_PORT}:`, err.message);
   }
 }
 

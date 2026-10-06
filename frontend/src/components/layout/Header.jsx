@@ -81,7 +81,7 @@ export default function Header({ onToggleSidebar, activeTab, onOpenCreateTask })
               </h1>
             </div>
             <p className="text-[11px] text-slate-400 dark:text-slate-500 hidden sm:block mt-0.5">
-              {user?.department ? `${user.department} Workspace` : 'ApexTask Pro'} • WAMP MySQL
+              {user?.department ? `${user.department} Workspace` : 'ApexTask Pro'} • MySQL Cloud Database
             </p>
           </div>
         </div>

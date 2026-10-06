@@ -158,7 +158,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, onSelectTab }) {
           <div className="flex items-center justify-between">
             <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
               <Database className="w-3.5 h-3.5 text-indigo-500" />
-              WAMP MySQL
+              MySQL Database
             </span>
             <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
               <span className="w-1.5 h-1.5 bg-emerald-500"></span>
@@ -166,7 +166,7 @@ export default function Sidebar({ isOpen, onClose, activeTab, onSelectTab }) {
             </span>
           </div>
           <div className="text-[10px] text-slate-400 truncate">
-            DB: <span className="font-mono text-slate-600 dark:text-slate-300">task_management</span>
+            DB: <span className="font-mono text-slate-600 dark:text-slate-300">u889453186_task_mngmnt</span>
           </div>
         </div>
       </aside>

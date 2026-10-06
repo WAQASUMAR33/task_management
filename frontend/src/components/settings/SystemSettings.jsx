@@ -172,7 +172,7 @@ export default function SystemSettings() {
             </div>
             <div>
               <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100">
-                WAMP MySQL Database Diagnostics
+                Remote MySQL Database Diagnostics
               </h3>
               <p className="text-[11px] text-slate-400">Underlying relational engine specifications</p>
             </div>
@@ -181,12 +181,12 @@ export default function SystemSettings() {
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
             <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-none">
               <span className="text-slate-400 text-[10px] uppercase font-bold block mb-1">Server Host</span>
-              <span className="font-mono font-bold text-slate-900 dark:text-slate-100">127.0.0.1:3306</span>
+              <span className="font-mono font-bold text-slate-900 dark:text-slate-100">195.35.59.84:3306</span>
             </div>
 
             <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-none">
               <span className="text-slate-400 text-[10px] uppercase font-bold block mb-1">Database Name</span>
-              <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">task_management</span>
+              <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">u889453186_task_mngmnt</span>
             </div>
 
             <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-none">
