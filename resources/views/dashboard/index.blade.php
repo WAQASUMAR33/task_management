@@ -113,6 +113,97 @@
     </div>
 </div>
 
+<!-- Statistics & Visual Performance Analytics Section -->
+<div class="dashboard-charts-grid">
+    <!-- Chart 1: Deliverable Status Breakdown (Doughnut) -->
+    <div class="mui-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="mui-card-header">
+            <div>
+                <h3 class="mui-card-title">Status Breakdown</h3>
+                <div class="mui-card-subtitle">Real-time health of active deliverables</div>
+            </div>
+            <div style="width: 36px; height: 36px; border-radius: var(--mui-radius-md); background: var(--mui-primary-light); color: var(--mui-primary); display: flex; align-items: center; justify-content: center;">
+                <span class="material-symbols-outlined">donut_small</span>
+            </div>
+        </div>
+
+        <div style="position: relative; margin: 8px 0;">
+            <div class="chart-canvas-box" style="height: 220px;">
+                <canvas id="statusDoughnutChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Status Summary Legend Chips -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding-top: 14px; border-top: 1px solid var(--mui-outline-variant);">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8125rem;">
+                <span style="width: 10px; height: 10px; border-radius: 50%; background: #10b981; flex-shrink: 0;"></span>
+                <span style="color: var(--mui-on-surface-variant);">Done:</span>
+                <strong style="color: var(--mui-on-surface);">{{ $completedTasks }}</strong>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8125rem;">
+                <span style="width: 10px; height: 10px; border-radius: 50%; background: #4f46e5; flex-shrink: 0;"></span>
+                <span style="color: var(--mui-on-surface-variant);">In Progress:</span>
+                <strong style="color: var(--mui-on-surface);">{{ $inProgressTasks }}</strong>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8125rem;">
+                <span style="width: 10px; height: 10px; border-radius: 50%; background: #94a3b8; flex-shrink: 0;"></span>
+                <span style="color: var(--mui-on-surface-variant);">Pending (To Do):</span>
+                <strong style="color: var(--mui-on-surface);">{{ $todoTasks }}</strong>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8125rem;">
+                <span style="width: 10px; height: 10px; border-radius: 50%; background: #ef4444; flex-shrink: 0;"></span>
+                <span style="color: var(--mui-on-surface-variant);">Overdue:</span>
+                <strong style="color: {{ $overdueTasks > 0 ? 'var(--mui-error)' : 'var(--mui-on-surface)' }};">{{ $overdueTasks }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: 7-Day Velocity & Completion Trend (Smooth Area Spline) -->
+    <div class="mui-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="mui-card-header" style="flex-wrap: wrap; gap: 10px;">
+            <div>
+                <h3 class="mui-card-title">7-Day Deliverable Velocity</h3>
+                <div class="mui-card-subtitle">Created vs Completed deliverables trend</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; font-size: 0.75rem;">
+                <span style="display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 12px; height: 3px; background: #4f46e5; border-radius: 2px;"></span>
+                    <span style="color: var(--mui-on-surface-variant); font-weight: 600;">Created</span>
+                </span>
+                <span style="display: flex; align-items: center; gap: 6px;">
+                    <span style="width: 12px; height: 3px; background: #10b981; border-radius: 2px;"></span>
+                    <span style="color: var(--mui-on-surface-variant); font-weight: 600;">Completed</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="chart-canvas-box" style="margin-top: 10px;">
+            <canvas id="velocityLineChart"></canvas>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--mui-on-surface-variant); padding-top: 12px; border-top: 1px solid var(--mui-outline-variant); margin-top: 8px;">
+            <span><span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle; color: var(--mui-primary);">insights</span> 7-day rolling window</span>
+            <span style="font-weight: 600; color: var(--mui-primary);">Real-time metrics</span>
+        </div>
+    </div>
+</div>
+
+<!-- Chart 3: Section & Workload Performance Comparison -->
+<div class="mui-card" style="margin-bottom: 28px;">
+    <div class="mui-card-header" style="flex-wrap: wrap; gap: 12px;">
+        <div>
+            <h3 class="mui-card-title">{{ Auth::user()->isSuperAdmin() ? 'Unit Section Capacity & Completion' : (Auth::user()->isSectionAdmin() ? 'Team Specialist Workload Comparison' : 'Task Priority Execution') }}</h3>
+            <div class="mui-card-subtitle">{{ Auth::user()->isSuperAdmin() ? 'Deliverable distribution and completion rates across operational sections' : (Auth::user()->isSectionAdmin() ? 'Task volume and completions across assigned specialists' : 'Distribution of workload across priorities') }}</div>
+        </div>
+        <div style="width: 36px; height: 36px; border-radius: var(--mui-radius-md); background: #ede9fe; color: #7c3aed; display: flex; align-items: center; justify-content: center;">
+            <span class="material-symbols-outlined">bar_chart</span>
+        </div>
+    </div>
+    <div class="chart-canvas-box" style="height: 240px; margin-top: 10px;">
+        <canvas id="comparisonBarChart"></canvas>
+    </div>
+</div>
+
 @if(Auth::user()->isSuperAdmin() && $allSections->isNotEmpty())
 <!-- Super Admin: Sections Performance Matrix -->
 <div class="mui-card" style="margin-bottom: 28px;">
@@ -277,7 +368,7 @@
 </div>
 
 <!-- Split: Recent Tasks & Real-time Activity Trail -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px; margin-bottom: 28px;">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 28px;">
     <!-- Recent Tasks List -->
     <div class="mui-card">
         <div class="mui-card-header">
@@ -433,3 +524,217 @@
 @endif
 
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/chart.umd.min.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof Chart === 'undefined') return;
+
+    // Material Design 3 Chart Color Palette
+    const colors = {
+        primary: '#4f46e5',
+        primaryLight: 'rgba(79, 70, 229, 0.12)',
+        success: '#10b981',
+        successLight: 'rgba(16, 185, 129, 0.12)',
+        warning: '#f59e0b',
+        warningLight: 'rgba(245, 158, 11, 0.12)',
+        danger: '#ef4444',
+        dangerLight: 'rgba(239, 68, 68, 0.12)',
+        slate: '#94a3b8',
+        slateLight: 'rgba(148, 163, 184, 0.12)',
+        text: '#1e293b',
+        textMuted: '#64748b',
+        grid: 'rgba(226, 232, 240, 0.8)'
+    };
+
+    Chart.defaults.font.family = "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif";
+    Chart.defaults.color = colors.textMuted;
+
+    // 1. Status Doughnut Chart (Cutout 70%, Mobile Touch-friendly)
+    const statusCtx = document.getElementById('statusDoughnutChart');
+    if (statusCtx) {
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'In Progress', 'Pending (To Do)', 'Overdue'],
+                datasets: [{
+                    data: [{{ $completedTasks }}, {{ $inProgressTasks }}, {{ $todoTasks }}, {{ $overdueTasks }}],
+                    backgroundColor: [colors.success, colors.primary, colors.slate, colors.danger],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 10,
+                            padding: 10,
+                            usePointStyle: true,
+                            font: { size: 11, weight: 600 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleFont: { size: 12, weight: 700 },
+                        bodyFont: { size: 12 },
+                        padding: 10,
+                        cornerRadius: 8,
+                        boxPadding: 4
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. 7-Day Velocity Line Chart (Smooth Spline Area)
+    const velocityCtx = document.getElementById('velocityLineChart');
+    if (velocityCtx) {
+        new Chart(velocityCtx, {
+            type: 'line',
+            data: {
+                labels: {!! json_encode($sevenDaysLabels) !!},
+                datasets: [
+                    {
+                        label: 'Tasks Created',
+                        data: {!! json_encode($sevenDaysCreated) !!},
+                        borderColor: colors.primary,
+                        backgroundColor: colors.primaryLight,
+                        fill: true,
+                        tension: 0.38,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: colors.primary,
+                        borderWidth: 2.5
+                    },
+                    {
+                        label: 'Tasks Completed',
+                        data: {!! json_encode($sevenDaysCompleted) !!},
+                        borderColor: colors.success,
+                        backgroundColor: colors.successLight,
+                        fill: true,
+                        tension: 0.38,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: colors.success,
+                        borderWidth: 2.5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 11 },
+                            maxRotation: 0,
+                            autoSkip: true,
+                            maxTicksLimit: 7
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: colors.grid },
+                        ticks: {
+                            stepSize: 1,
+                            precision: 0,
+                            font: { size: 11 }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleFont: { size: 12, weight: 700 },
+                        bodyFont: { size: 12 },
+                        padding: 10,
+                        cornerRadius: 8
+                    }
+                }
+            }
+        });
+    }
+
+    // 3. Section / Workload Capacity Bar Chart
+    const comparisonCtx = document.getElementById('comparisonBarChart');
+    if (comparisonCtx) {
+        new Chart(comparisonCtx, {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($chartSectionsLabels) !!},
+                datasets: [
+                    {
+                        label: 'Total Deliverables',
+                        data: {!! json_encode($chartSectionsTotal) !!},
+                        backgroundColor: colors.primary,
+                        borderRadius: 6,
+                        maxBarThickness: 32
+                    },
+                    {
+                        label: 'Completed Deliverables',
+                        data: {!! json_encode($chartSectionsCompleted) !!},
+                        backgroundColor: colors.success,
+                        borderRadius: 6,
+                        maxBarThickness: 32
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 11, weight: 600 },
+                            maxRotation: 25
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: colors.grid },
+                        ticks: {
+                            stepSize: 1,
+                            precision: 0,
+                            font: { size: 11 }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'end',
+                        labels: {
+                            boxWidth: 10,
+                            padding: 10,
+                            usePointStyle: true,
+                            font: { size: 11, weight: 600 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleFont: { size: 12, weight: 700 },
+                        bodyFont: { size: 12 },
+                        padding: 10,
+                        cornerRadius: 8
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+@endpush

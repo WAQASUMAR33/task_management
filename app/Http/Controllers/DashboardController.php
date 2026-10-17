@@ -27,6 +27,7 @@ class DashboardController extends Controller
             $completedTasks = (clone $query)->where('status', 'completed')->count();
             $overdueTasks = (clone $query)->where('status', '!=', 'completed')->where('due_date', '<', $today)->count();
             $dueTodayTasks = (clone $query)->where('status', '!=', 'completed')->whereDate('due_date', $today)->count();
+            $todoTasks = max(0, $totalTasks - $inProgressTasks - $completedTasks);
 
             $highPriority = (clone $query)->where('priority', 'high')->count();
             $mediumPriority = (clone $query)->where('priority', 'medium')->count();
@@ -49,10 +50,13 @@ class DashboardController extends Controller
             $sectionSummary = $user->section;
             $allSections = collect();
 
-            return view('dashboard.index', compact(
+            $chartAnalytics = $this->buildChartAnalytics($query, $user);
+
+            return view('dashboard.index', array_merge(compact(
                 'totalTasks',
                 'inProgressTasks',
                 'completedTasks',
+                'todoTasks',
                 'overdueTasks',
                 'dueTodayTasks',
                 'highPriority',
@@ -64,7 +68,7 @@ class DashboardController extends Controller
                 'staffWorkloads',
                 'sectionSummary',
                 'allSections'
-            ));
+            ), $chartAnalytics));
         }
 
         if ($user->isSectionAdmin()) {
@@ -79,6 +83,7 @@ class DashboardController extends Controller
             $completedTasks = (clone $query)->where('status', 'completed')->count();
             $overdueTasks = (clone $query)->where('status', '!=', 'completed')->where('due_date', '<', $today)->count();
             $dueTodayTasks = (clone $query)->where('status', '!=', 'completed')->whereDate('due_date', $today)->count();
+            $todoTasks = max(0, $totalTasks - $inProgressTasks - $completedTasks);
 
             $highPriority = (clone $query)->where('priority', 'high')->count();
             $mediumPriority = (clone $query)->where('priority', 'medium')->count();
@@ -128,11 +133,13 @@ class DashboardController extends Controller
                 ->get();
 
             $allSections = collect();
+            $chartAnalytics = $this->buildChartAnalytics($query, $user);
 
-            return view('dashboard.index', compact(
+            return view('dashboard.index', array_merge(compact(
                 'totalTasks',
                 'inProgressTasks',
                 'completedTasks',
+                'todoTasks',
                 'overdueTasks',
                 'dueTodayTasks',
                 'highPriority',
@@ -144,10 +151,12 @@ class DashboardController extends Controller
                 'staffWorkloads',
                 'sectionSummary',
                 'allSections'
-            ));
+            ), $chartAnalytics));
         }
 
         // Super Admin: Unit-wide Executive Global View
+        $query = Task::query();
+
         $totalTasks = Task::count();
         $inProgressTasks = Task::where('status', 'in_progress')->count();
         $completedTasks = Task::where('status', 'completed')->count();
@@ -157,6 +166,7 @@ class DashboardController extends Controller
         $dueTodayTasks = Task::where('status', '!=', 'completed')
             ->whereDate('due_date', $today)
             ->count();
+        $todoTasks = max(0, $totalTasks - $inProgressTasks - $completedTasks);
 
         $highPriority = Task::where('priority', 'high')->count();
         $mediumPriority = Task::where('priority', 'medium')->count();
@@ -210,11 +220,13 @@ class DashboardController extends Controller
         });
 
         $sectionSummary = null;
+        $chartAnalytics = $this->buildChartAnalytics($query, $user);
 
-        return view('dashboard.index', compact(
+        return view('dashboard.index', array_merge(compact(
             'totalTasks',
             'inProgressTasks',
             'completedTasks',
+            'todoTasks',
             'overdueTasks',
             'dueTodayTasks',
             'highPriority',
@@ -226,6 +238,80 @@ class DashboardController extends Controller
             'staffWorkloads',
             'sectionSummary',
             'allSections'
-        ));
+        ), $chartAnalytics));
+    }
+
+    /**
+     * Compile 7-day velocity and sectional chart analytics datasets
+     */
+    private function buildChartAnalytics($baseQuery, $user): array
+    {
+        $sevenDaysLabels = [];
+        $sevenDaysCreated = [];
+        $sevenDaysCompleted = [];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i);
+            $dateStr = $date->format('Y-m-d');
+            $sevenDaysLabels[] = $date->format('D, M j');
+
+            $created = (clone $baseQuery)->whereDate('created_at', $dateStr)->count();
+            $completed = (clone $baseQuery)->where('status', 'completed')->whereDate('updated_at', $dateStr)->count();
+
+            $sevenDaysCreated[] = $created;
+            $sevenDaysCompleted[] = $completed;
+        }
+
+        $chartSectionsLabels = [];
+        $chartSectionsTotal = [];
+        $chartSectionsCompleted = [];
+
+        if ($user->isSuperAdmin()) {
+            $sections = Section::withCount([
+                'tasks',
+                'tasks as completed_tasks' => function ($q) {
+                    $q->where('status', 'completed');
+                }
+            ])->get();
+
+            foreach ($sections as $sec) {
+                $chartSectionsLabels[] = $sec->name;
+                $chartSectionsTotal[] = $sec->tasks_count;
+                $chartSectionsCompleted[] = $sec->completed_tasks;
+            }
+        } elseif ($user->isSectionAdmin()) {
+            $staff = User::where('section_id', $user->section_id)
+                ->where('role', 'staff')
+                ->with(['assignedTasks' => function ($q) use ($user) {
+                    $q->where('section_id', $user->section_id);
+                }])->get();
+
+            foreach ($staff as $m) {
+                $chartSectionsLabels[] = $m->name;
+                $chartSectionsTotal[] = $m->assignedTasks->count();
+                $chartSectionsCompleted[] = $m->assignedTasks->where('status', 'completed')->count();
+            }
+        } else {
+            $chartSectionsLabels = ['High Priority', 'Medium Priority', 'Low Priority'];
+            $chartSectionsTotal = [
+                (clone $baseQuery)->where('priority', 'high')->count(),
+                (clone $baseQuery)->where('priority', 'medium')->count(),
+                (clone $baseQuery)->where('priority', 'low')->count(),
+            ];
+            $chartSectionsCompleted = [
+                (clone $baseQuery)->where('priority', 'high')->where('status', 'completed')->count(),
+                (clone $baseQuery)->where('priority', 'medium')->where('status', 'completed')->count(),
+                (clone $baseQuery)->where('priority', 'low')->where('status', 'completed')->count(),
+            ];
+        }
+
+        return [
+            'sevenDaysLabels' => $sevenDaysLabels,
+            'sevenDaysCreated' => $sevenDaysCreated,
+            'sevenDaysCompleted' => $sevenDaysCompleted,
+            'chartSectionsLabels' => $chartSectionsLabels,
+            'chartSectionsTotal' => $chartSectionsTotal,
+            'chartSectionsCompleted' => $chartSectionsCompleted,
+        ];
     }
 }
