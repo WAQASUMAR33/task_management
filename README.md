@@ -1,12 +1,26 @@
-# ⚡ ApexTask Pro - Simple Task Management System with RBAC & File Attachments
+# ⚡ ApexTask Pro - Enterprise Laravel Platform with Material UI
 
-A modern, robust, and responsive full-stack **Task Management System** featuring **3-Tier Role-Based Access Control (RBAC)**, multi-file attachments (max 10MB per file with preview and download), real-time filtering & search, and role-aware dashboards.
+A pure **Laravel 12 (PHP 8.2+)** full-stack **Task Management System** built with **Material UI (Material Design 3)** components, 3-tier Role-Based Access Control (RBAC), multi-file attachments (up to 10MB), collaboration comments, and executive analytics.
+
+> 💡 **Pure Laravel Platform:** Completely removes any Node.js/Next.js/React runtime server dependency. Deploys natively to **Hostinger**, Apache, Nginx, or local WAMP/XAMPP environments with zero-build pure PHP and CSS.
 
 ---
 
 ## 🌟 Key Features
 
-### 1. 3-Tier Role-Based Access Control (RBAC)
+### 1. Material UI (Material Design 3) Design System Across All Pages
+- **Top App Bar:** Elevation shadows, active page breadcrumb, role badge, user profile chip, notifications icon, and mobile drawer hamburger toggle.
+- **Navigation Drawer:** Sleek M3 drawer with rounded pill indicators, section grouping, and footer user card.
+- **Material Cards (`md-card`):** Elevation levels (dp1 - dp4), surface containers, rounded-2xl geometry.
+- **Floating Action Button (FAB):** Quick-action FAB for instant task creation.
+- **Form Controls:** Outlined text fields, elevated selects, and multi-file upload zones.
+- **Chips & Badges:** Status chips (`To Do`, `In Progress`, `Completed`), priority chips (`High`, `Medium`, `Low`), and role chips.
+- **Material Dialogs & Modals:** Smooth animated dialogs for creating/editing tasks, managing users, and resetting passwords.
+- **Live Snackbars:** Material toast notifications for instant feedback.
+
+---
+
+### 2. 3-Tier Role-Based Access Control (RBAC)
 - 👑 **Super Admin (`super_admin`):**
   - Full system oversight & control.
   - Can manage all tasks, re-assign workloads, and delete tasks.
@@ -18,69 +32,12 @@ A modern, robust, and responsive full-stack **Task Management System** featuring
   - Restricted from creating or altering Admin/Super Admin accounts.
   - Restricted from global system settings.
 - 👤 **Staff (`staff`):**
-  - Personal dashboard displaying **"My Tasks"**, tasks due today, and priority items.
+  - Personal workstation dashboard displaying assigned tasks, tasks due today, and priority items.
   - Strictly isolated view: can only see tasks assigned to them or created by them.
   - Can quickly update task status: `To Do` ➔ `In Progress` ➔ `Completed`.
   - Can add notes/comments to task collaboration threads.
   - Can attach files (images, PDFs, documents, spreadsheets) up to 10MB per file.
-  - Restricted from creating new tasks or deleting tasks/users.
-
----
-
-### 2. Multi-File Attachments & Collaboration
-- **Supported Formats:** Images (PNG, JPG, SVG, WebP), PDFs, Word Documents, Excel/CSV Spreadsheets, Plain Text, and ZIP Archives.
-- **Validation:** Server-side and client-side 10MB per file validation and MIME-type verification.
-- **File Previews & Downloads:** Embedded image thumbnails and dedicated file-type icons with direct download streams.
-- **Task Comments:** Real-time conversation thread per task with role badges and timestamps.
-
----
-
-### 3. Role-Aware Dashboard & Real-Time Filtering
-- **Executive View (Super Admin / Admin):**
-  - Metric KPI cards: Total Tasks, In Progress, Completed, Overdue, Tasks Due Today.
-  - Overall completion rate percentage with progress bar.
-  - Priority distribution metrics (High, Medium, Low).
-  - Staff workload allocation matrix with task counts, completion velocity, and overdue alerts.
-  - Live activity and audit trail log.
-- **Staff View:**
-  - Focused dashboard with assigned workloads, due dates, and quick status actions.
-- **Filtering & Search:**
-  - Real-time text search across title and description.
-  - Filter by Status (`To Do`, `In Progress`, `Completed`).
-  - Filter by Priority (`Low`, `Medium`, `High`).
-  - Filter by Assignee (Staff dropdown).
-  - Overdue toggle & Date range checks.
-  - Card Grid View and Row Table View toggles.
-
----
-
-## 🏗️ Technology Stack
-
-| Layer | Technology |
-|---|---|
-| **Frontend** | React 19, Vite, Tailwind CSS v4, Lucide React Icons |
-| **Backend** | Node.js, Express 5, CORS, Multer (File Handling) |
-| **Database** | MySQL 5.7+ / 8.0+ on **WAMP Server** (`mysql2/promise` pool) |
-| **Security** | JSON Web Tokens (JWT), Bcrypt password hashing (Cost 10) |
-
----
-
-## 🗄️ WAMP MySQL Configuration
-
-The backend is configured to connect directly to your local **WAMP Server**:
-- **Host:** `127.0.0.1` (or `localhost`)
-- **Port:** `3306`
-- **Username:** `root`
-- **Password:** *(empty)*
-- **Database:** `task_management`
-
-You can open **phpMyAdmin** at `http://localhost/phpmyadmin` to browse and manage all tables:
-- `users`
-- `tasks`
-- `task_attachments`
-- `task_comments`
-- `activity_logs`
-- `system_settings`
+  - Restricted from creating new tasks or accessing user/settings administration.
 
 ---
 
@@ -101,89 +58,45 @@ All demo accounts share the password: `Password123!`
 
 ---
 
-## 🚀 Setup & Execution Instructions
+## 💻 Local Development
 
-### Prerequisites
-- Node.js (v18+ or v22+)
-- npm (v9+)
+### 1. Requirements
+- PHP 8.2+
+- Composer 2.x
+- SQLite or MySQL (WAMP/XAMPP)
 
----
-
-### 1. Backend Setup
+### 2. Run the Application Locally
 ```bash
-# Navigate to the backend directory
-cd backend
-
-# Install dependencies (Express, better-sqlite3, multer, bcryptjs, jsonwebtoken, etc.)
-npm install
-
-# Seed the SQLite database with default roles, users, tasks, and sample attachments
-npm run seed
-
-# Start the backend server (Runs on port 5000)
-npm start
+# Start local PHP development server
+php artisan serve
 ```
-The backend API will run at `http://localhost:5000`.
+Open your browser at `http://localhost:8000`.
 
 ---
 
-### 2. Frontend Setup
-In a new terminal window:
-```bash
-# Navigate to the frontend directory
-cd frontend
+## 🚀 Hostinger Deployment Guide
 
-# Install dependencies
-npm install
-
-# Start the Vite development server (Runs on port 3000 or 3001)
-npm run dev
-```
-Open your browser at `http://localhost:3000` (or `http://localhost:3001` if port 3000 is occupied).
-
----
-
-### 3. Running Automated Test Suite
-To verify the RBAC rules and API integrity:
-```bash
-cd backend
-node src/test_e2e.js
-```
-Expected output: **20 Passed, 0 Failed**.
-
----
-
-## 📡 API Endpoints Reference
-
-### Authentication (`/api/auth`)
-- `POST /api/auth/login` - Authenticate user & issue JWT
-- `GET /api/auth/me` - Retrieve current session user profile
-- `PUT /api/auth/profile` - Update display name & avatar color
-- `POST /api/auth/change-password` - Update password
-
-### User Management (`/api/users`) - *Super Admin & Admin Only*
-- `GET /api/users` - List users with assigned task statistics
-- `POST /api/users` - Create user (Admin can only create Staff; Super Admin can create any)
-- `PUT /api/users/:id` - Update user details
-- `PATCH /api/users/:id/toggle-status` - Deactivate / Activate account
-- `POST /api/users/:id/reset-password` - Reset user password
-- `DELETE /api/users/:id` - Delete user account
-
-### Task Management (`/api/tasks`)
-- `GET /api/tasks` - List tasks with status/priority/assignee/search filters (role-isolated for staff)
-- `GET /api/tasks/:id` - Task detail with attachments & comments
-- `POST /api/tasks` - Create task with optional file uploads (*Admin/Super Admin only*)
-- `PUT /api/tasks/:id` - Update task details (*Admin/Super Admin only*)
-- `PATCH /api/tasks/:id/status` - Quick status update (`todo`, `in_progress`, `completed`)
-- `PATCH /api/tasks/:id/assignee` - Reassign task (*Admin/Super Admin only*)
-- `DELETE /api/tasks/:id` - Delete task (*Admin/Super Admin only*)
-
-### File Attachments & Comments
-- `POST /api/tasks/:id/attachments` - Upload files (up to 10 files, 10MB each)
-- `DELETE /api/tasks/attachments/:attachmentId` - Delete attachment file
-- `GET /api/tasks/attachments/:attachmentId/download` - Stream / download file
-- `GET /api/tasks/:id/comments` - Fetch task comment timeline
-- `POST /api/tasks/:id/comments` - Post comment / note
-
-### Dashboard & Analytics (`/api/dashboard`)
-- `GET /api/dashboard/stats` - Role-aware metrics, overdue counts, completion velocity, workload tables, and activity log.
+### Method: Standard Hostinger `public_html` Deployment
+1. **Compress & Upload:**
+   - Compress the Laravel project files into a ZIP archive (excluding `node_modules` and `_backup_node_react/`).
+   - In Hostinger hPanel -> **File Manager**, upload and extract the ZIP directly into `public_html/`.
+2. **Configure Database:**
+   - In Hostinger hPanel -> **Databases**, create your MySQL database and user.
+   - Edit `.env` in `public_html/` with your Hostinger database details:
+     ```env
+     DB_CONNECTION=mysql
+     DB_HOST=127.0.0.1
+     DB_PORT=3306
+     DB_DATABASE=u889453186_task_mngmnt
+     DB_USERNAME=u889453186_task_mngmnt
+     DB_PASSWORD=YourPasswordHere
+     ```
+3. **Run Migrations & Seeding:**
+   - If SSH is available on Hostinger:
+     ```bash
+     php artisan migrate --seed
+     php artisan storage:link
+     ```
+   - Or export your local database tables to Hostinger via **phpMyAdmin**.
+4. **Root Routing (`.htaccess`):**
+   - The included root [`.htaccess`](file:///d:/task_management/.htaccess) automatically routes incoming web requests directly to the `public/` directory while securing your `.env` and application files.

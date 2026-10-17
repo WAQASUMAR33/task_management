@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Prevent direct access to hidden files and directories
+    RewriteRule ^\.(.*)$ - [F,L]
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L]
+    RewriteRule ^(composer\.(json|lock)|package\.json|artisan|\.env.*)$ - [F,L]
+
+    # Forward all public assets and routes to public/ folder
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
